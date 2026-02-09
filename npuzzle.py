@@ -6,7 +6,7 @@ goal_state = [[1, 2, 3],
               [4, 5, 6], 
               [7, 8, 0]]
 
-depth_1 = [[1, 2, 3], 
+depth_2 = [[1, 2, 3], 
            [4, 5, 6], 
            [0, 7, 8]]
 
@@ -57,6 +57,16 @@ def generate_moves(board):
     
     return possible_moves
 
+def h_misplaced(board):
+    count = 0
+    for r in range(len(board)):
+        for c in range(len(board)):
+            val = board[r][c]
+            if val != 0 and val != goal_state[r][c]:
+                count += 1
+    return count
+
+
 ## TESTS
 if __name__ == "__main__":
     assert board_to_tuple(goal_state) == (1,2,3,4,5,6,7,8,0)
@@ -66,7 +76,7 @@ if __name__ == "__main__":
     print("find_empty_space successful")
 
     assert is_goal(goal_state) is True
-    assert is_goal(depth_1) is False
+    assert is_goal(depth_2) is False
     print("is_goal successful")
 
     corner_gap = [[0, 1, 2], 
@@ -85,3 +95,8 @@ if __name__ == "__main__":
     assert len(generate_moves(center_gap)) == 4
     assert len(generate_moves(edge_gap)) == 3
     print("generate_moves successful")
+
+    assert h_misplaced(goal_state) == 0
+    assert h_misplaced(depth_2) == 2
+    assert h_misplaced(challenge_state) == 5
+    print("h_misplaced successful")
