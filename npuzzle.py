@@ -61,7 +61,7 @@ def generate_moves(board):
 def h_misplaced(board):
     count = 0
     for r in range(len(board)):
-        for c in range(len(board)):
+        for c in range(len(board[r])):
             val = board[r][c]
             if val != 0 and val != goal_state[r][c]:
                 count += 1
