@@ -43,14 +43,15 @@ def is_goal(board):
     return board == goal_state
 
 def generate_moves(board):
-    possible_moves= []
+    n = len(board)
+    possible_moves = []
     r, c = find_empty_space(board)
 
     moves = [(-1, 0), (1, 0), (0, -1), (0, 1)]
 
     for row_pos, col_pos in moves:
         nr, nc = r + row_pos, c + col_pos
-        if 0 <= nr < 3 and 0 <= nc < 3:
+        if 0 <= nr < n and 0 <= nc < n:
             new_board = copy.deepcopy(board)
             new_board[r][c], new_board[nr][nc] = new_board[nr][nc], new_board[r][c]
             possible_moves.append(new_board)
