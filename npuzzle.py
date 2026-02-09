@@ -66,6 +66,26 @@ def h_misplaced(board):
                 count += 1
     return count
 
+def position_coordinates(goal):
+    pos = {}
+    n = len(goal)
+    for r in range(n):
+        for c in range(n):
+            pos[goal[r][c]] = (r, c)
+    return pos
+
+goal_pos = position_coordinates(goal_state)
+
+def h_manhattan(board):
+    n = len(board)
+    dist = 0
+    for r in range(n):
+        for c in range(n):
+            val = board[r][c]
+            if val != 0:
+                gr, gc = goal_pos[val]
+                dist += abs(r - gr) + abs(c - gc)
+    return dist
 
 ## TESTS
 if __name__ == "__main__":
@@ -100,3 +120,8 @@ if __name__ == "__main__":
     assert h_misplaced(depth_2) == 2
     assert h_misplaced(challenge_state) == 5
     print("h_misplaced successful")
+
+    assert h_manhattan(goal_state) == 0
+    assert h_manhattan(depth_2) == 2
+    assert h_manhattan(challenge_state) == 10
+    print("h_manhattan successful")
