@@ -88,6 +88,78 @@ def h_manhattan(board):
                 dist += abs(r - gr) + abs(c - gc)
     return dist
 
+def uniform_cost(initial_board):
+    start_node = Node(initial_board, g=0, h=0, parent=None)
+
+    frontier = []
+    heapq.heappush(frontier, start_node)
+
+    visited = set()
+    nodes_expanded = 0
+    max_queue_size = 1
+
+    while frontier:
+        max_queue_size = max(max_queue_size, len(frontier))
+        node = heapq.heappop(frontier)
+        state = board_to_tuple(node.board)
+
+        if state in visited:
+            continue
+        visited.add(state)
+
+        if is_goal(node.board):
+            return node, nodes_expanded, max_queue_size
+
+        nodes_expanded += 1
+
+        for neighbor in generate_moves(node.board): 
+            neighbor_state = board_to_tuple(neighbor)
+            if neighbor_state in visited:
+                continue
+            child = Node(neighbor, g=node.g + 1, h=0, parent=node)
+            heapq.heappush(frontier, child)
+    
+    return None, nodes_expanded, max_queue_size
+
+def a_star(initial_board, heuristic_fn):
+    start_node = Node(initial_board, g=0, h=heuristic_fn(initial_board), parent=None)
+
+    frontier = []
+    heapq.heappush(frontier, start_node)
+
+    visited = set()
+    nodes_expanded = 0
+    max_queue_size = 1
+
+    while frontier:
+        max_queue_size = max(max_queue_size, len(frontier))
+        node = heapq.heappop(frontier)
+        state = board_to_tuple(node.board)
+
+        if state in visited:
+            continue
+        visited.add(state)
+
+        if is_goal(node.board):
+            return node, nodes_expanded, max_queue_size
+
+        nodes_expanded += 1
+
+        for neighbor in generate_moves(node.board): 
+            neighbor_state = board_to_tuple(neighbor)
+            if neighbor_state in visited:
+                continue
+            child = Node(neighbor, g=node.g + 1, h=heuristic_fn(neighbor), parent=node)
+            heapq.heappush(frontier, child)
+    
+    return None, nodes_expanded, max_queue_size
+
+def a_star_misplaced(start_board):
+    return a_star(start_board, h_misplaced)
+
+def a_star_manhattan(start_board):
+    return a_star(start_board, h_manhattan)
+
 ## TESTS
 if __name__ == "__main__":
     assert board_to_tuple(goal_state) == (1,2,3,4,5,6,7,8,0)
@@ -126,3 +198,30 @@ if __name__ == "__main__":
     assert h_manhattan(depth_2) == 2
     assert h_manhattan(challenge_state) == 10
     print("h_manhattan successful")
+
+    test = [[1,2,3], [4,5,6], [7,0,8]]
+    goal_node, expanded, max_queue = uniform_cost(test)
+    assert goal_node is not None
+    assert is_goal(goal_node.board)
+    assert goal_node.g == 1
+    print("uniform_cost successful")
+
+    node, expanded, max_queue = a_star_misplaced(test)
+    assert node is not None
+    assert is_goal(node.board)
+    assert node.g == 1
+    print("a_star_misplaced successful")
+
+    node, expanded, max_queue = a_star_manhattan(test)
+    assert node is not None
+    assert is_goal(node.board)
+    assert node.g == 1
+    print("a_star_manhattan successful")
+
+    node_u, exp_u, max_u = uniform_cost(challenge_state)
+    node_m, exp_m, max_m = a_star_manhattan(challenge_state)
+    node_mi, exp_mi, max_mi = a_star_misplaced(challenge_state)
+
+    print("UCS expanded:", exp_u, "max queue:", max_u)
+    print("A* Manhattan expanded:", exp_m, "max queue:", max_m)
+    print("A* Misplaced expanded:", exp_mi, "max queue:", max_mi)
