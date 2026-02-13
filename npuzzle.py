@@ -6,13 +6,29 @@ goal_state = [[1, 2, 3],
               [4, 5, 6], 
               [7, 8, 0]]
 
-depth_2 = [[1, 2, 3], 
-           [4, 5, 6], 
-           [0, 7, 8]]
+very_easy = [[1, 2, 3],
+             [4, 5, 6], 
+             [0, 7, 8]]
 
-challenge_state = [[8, 1, 3], 
-                   [4, 0, 2], 
-                   [7, 6, 5]]
+easy = [[8, 1, 3],
+        [4, 0, 2], 
+        [7, 6, 5]]
+
+normal = [[5, 2, 3],
+          [7, 8, 1], 
+          [4, 0, 6]]
+
+hard = [[5, 2, 8],
+        [7, 4, 3], 
+        [6, 1, 0]]
+
+very_hard = [[4, 3, 5],
+             [0, 1, 2], 
+             [6, 8, 7]]
+
+extreme = [[0, 8, 7],
+           [2, 5, 1], 
+           [3, 6, 4]]
 
 class Node:
     def __init__(self, board, g, h, parent=None):
@@ -160,6 +176,111 @@ def a_star_misplaced(start_board):
 def a_star_manhattan(start_board):
     return a_star(start_board, h_manhattan)
 
+def enter_custom_puzzle():
+    print("Enter an n by n puzzle for each row, separated by spaces. Use 0 to represent the empty space.")
+    print("Example: Enter row 1: 1 2 3")
+
+    board = []
+    n = 3
+    for i in range(n):
+        while True:
+            raw = input(f"Enter row {i+1}: ").strip()
+            if " " in raw:
+                parts = raw.split()
+            else:
+                parts = list(raw) if raw.isdigit() else []
+
+            if len(parts) != n:
+                print(f"Invalid row. Please enter {n} numbers.")
+                continue
+
+            try:
+                row = [int(x) for x in parts]
+            except ValueError:
+                print("Invalid row. Use digits only.")
+                continue
+
+            board.append(row)
+            break
+    return board
+
+def select_algorithm():
+    while True:
+        print("Select algorithm:")
+        print("1) Uniform Cost Search")
+        print("2) A* with Misplaced Tile")
+        print("3) A* with Manhattan Distance")
+        choice = input("Enter 1, 2, or 3: ").strip()
+        
+        if choice in {"1", "2", "3"}:
+            return choice
+        print("Invalid choice, try again.")
+
+def main():
+    print("Welcome to the n-Puzzle Solver.")
+    while True:
+        mode = input("Type '1' to use a default puzzle, '2' to create your own, or 'q' to quit: ").strip()
+        if mode == "q":
+            return
+        if mode not in {"1", "2"}:
+            print("Invalid choice, try again.")
+            continue
+        else:
+            break
+
+    if mode == "1":
+        print("Default puzzles: ")
+        print("1. Very Easy")
+        print("2. Easy")
+        print("3. Normal")
+        print("4. Hard")
+        print("5. Very Hard")
+        print("6. Extreme")
+        
+        while True:
+            pick = input("Enter your choice by digit, or 'q' to quit: ").strip()
+            if pick in {"1","2","3","4","5","6"}:
+                break
+            if pick == "q":
+                return
+            print("Invalid choice. Please enter 1-6.")
+        
+        if pick == "1":
+            board = very_easy
+        elif pick == "2":
+            board = easy
+        elif pick == "3":
+            board = normal
+        elif pick == "4":
+            board = hard
+        elif pick == "5":
+            board = very_hard
+        elif pick == "6":
+            board = extreme
+    else:
+        board = enter_custom_puzzle()
+    
+    algorithm = select_algorithm()
+
+    if algorithm == "1":
+        node, expanded, max_q = uniform_cost(board)
+    elif algorithm == "2":
+        node, expanded, max_q = a_star_misplaced(board)
+    elif algorithm == "3":
+        node, expanded, max_q = a_star_manhattan(board)
+    else:
+        print("Invalid algorithm choice. Please enter 1, 2, or 3.")
+        return
+    
+    if node is None:
+        print("No solution found.")
+        return
+    
+    print("Goal reached!")
+    print("Solution depth: ", node.g)
+    print("Number of nodes expanded: ", expanded)
+    print("Max queue size: ", max_q)
+
 ## TESTS
 if __name__ == "__main__":
     assert board_to_tuple(goal_state) == (1,2,3,4,5,6,7,8,0)
@@ -169,7 +290,7 @@ if __name__ == "__main__":
     print("find_empty_space successful")
 
     assert is_goal(goal_state) is True
-    assert is_goal(depth_2) is False
+    assert is_goal(very_easy) is False
     print("is_goal successful")
 
     corner_gap = [[0, 1, 2], 
@@ -190,13 +311,13 @@ if __name__ == "__main__":
     print("generate_moves successful")
 
     assert h_misplaced(goal_state) == 0
-    assert h_misplaced(depth_2) == 2
-    assert h_misplaced(challenge_state) == 5
+    assert h_misplaced(very_easy) == 2
+    assert h_misplaced(easy) == 5
     print("h_misplaced successful")
 
     assert h_manhattan(goal_state) == 0
-    assert h_manhattan(depth_2) == 2
-    assert h_manhattan(challenge_state) == 10
+    assert h_manhattan(very_easy) == 2
+    assert h_manhattan(easy) == 10
     print("h_manhattan successful")
 
     test = [[1,2,3], [4,5,6], [7,0,8]]
@@ -218,10 +339,12 @@ if __name__ == "__main__":
     assert node.g == 1
     print("a_star_manhattan successful")
 
-    node_u, exp_u, max_u = uniform_cost(challenge_state)
-    node_m, exp_m, max_m = a_star_manhattan(challenge_state)
-    node_mi, exp_mi, max_mi = a_star_misplaced(challenge_state)
+    node_u, exp_u, max_u = uniform_cost(easy)
+    node_m, exp_m, max_m = a_star_manhattan(easy)
+    node_mi, exp_mi, max_mi = a_star_misplaced(easy)
 
     print("UCS expanded:", exp_u, "max queue:", max_u)
     print("A* Manhattan expanded:", exp_m, "max queue:", max_m)
     print("A* Misplaced expanded:", exp_mi, "max queue:", max_mi)
+    
+    main()
