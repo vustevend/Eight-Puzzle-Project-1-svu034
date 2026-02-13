@@ -1,6 +1,5 @@
 import copy
 import heapq
-from typing import List, Tuple, Optional
 
 goal_state = [[1, 2, 3], 
               [4, 5, 6], 
@@ -74,6 +73,15 @@ def generate_moves(board):
     
     return possible_moves
 
+def build_goal_state(n):
+    nums = list(range(1, n * n)) + [0]
+    return [nums[i * n:(i + 1) * n] for i in range(n)]
+
+def set_goal_state(n):
+    global goal_state, goal_pos
+    goal_state = build_goal_state(n)
+    goal_pos = position_coordinates(goal_state)
+
 def h_misplaced(board):
     count = 0
     for r in range(len(board)):
@@ -90,8 +98,6 @@ def position_coordinates(goal):
         for c in range(n):
             pos[goal[r][c]] = (r, c)
     return pos
-
-goal_pos = position_coordinates(goal_state)
 
 def h_manhattan(board):
     n = len(board)
@@ -128,6 +134,12 @@ def uniform_cost(initial_board):
 
         nodes_expanded += 1
 
+        # debug for nxn expansion
+        '''
+        if nodes_expanded % 5000 == 0:
+            print("expanded:", nodes_expanded, "max queue:", max_queue_size)
+        '''
+
         for neighbor in generate_moves(node.board): 
             neighbor_state = board_to_tuple(neighbor)
             if neighbor_state in visited:
@@ -160,6 +172,12 @@ def a_star(initial_board, heuristic_fn):
             return node, nodes_expanded, max_queue_size
 
         nodes_expanded += 1
+        
+        # debug for nxn expansion
+        '''
+        if nodes_expanded % 5000 == 0:
+            print("expanded:", nodes_expanded, "max queue:", max_queue_size)
+        '''
 
         for neighbor in generate_moves(node.board): 
             neighbor_state = board_to_tuple(neighbor)
@@ -176,33 +194,34 @@ def a_star_misplaced(start_board):
 def a_star_manhattan(start_board):
     return a_star(start_board, h_manhattan)
 
-def enter_custom_puzzle():
-    print("Enter an n by n puzzle for each row, separated by spaces. Use 0 to represent the empty space.")
-    print("Example: Enter row 1: 1 2 3")
+def enter_custom_puzzle(n):
+    print(f"Enter a {n}x{n} puzzle. For each row, enter {n} numbers separated by spaces. Use 0 to represent the empty space.")
 
-    board = []
-    n = 3
-    for i in range(n):
-        while True:
-            raw = input(f"Enter row {i+1}: ").strip()
-            if " " in raw:
-                parts = raw.split()
-            else:
-                parts = list(raw) if raw.isdigit() else []
+    while True:
+        board = []
+        for i in range(n):
+            while True:
+                raw_string = input(f"Enter row {i+1}: ").strip()
+                parts = raw_string.split()
 
-            if len(parts) != n:
-                print(f"Invalid row. Please enter {n} numbers.")
-                continue
+                if len(parts) != n or not all(p.isdigit() for p in parts):
+                    print(f"Invalid row. Enter {n} numbers within range 0 to {n * n - 1} separated by spaces. Use 0 for the empty space.")
+                    continue
 
-            try:
                 row = [int(x) for x in parts]
-            except ValueError:
-                print("Invalid row. Use digits only.")
-                continue
+                if any(x < 0 or x >= n*n for x in row):
+                    print(f"Invalid row. Enter {n} numbers within range 0 to {n*n-1}.")
+                    continue
 
-            board.append(row)
-            break
-    return board
+                board.append(row)
+                break
+                
+        flat = list(board_to_tuple(board))
+        if sorted(flat) != list(range(n * n)):
+            print(f"Invalid puzzle. Use each number 0 to {n * n - 1} exactly once.")
+            continue
+
+        return board
 
 def select_algorithm():
     while True:
@@ -217,7 +236,8 @@ def select_algorithm():
         print("Invalid choice, try again.")
 
 def main():
-    print("Welcome to the n-Puzzle Solver.")
+    print("Welcome to the n-Puzzle Solver!")
+    set_goal_state(3)
     while True:
         mode = input("Type '1' to use a default puzzle, '2' to create your own, or 'q' to quit: ").strip()
         if mode == "q":
@@ -258,7 +278,17 @@ def main():
         elif pick == "6":
             board = extreme
     else:
-        board = enter_custom_puzzle()
+        while True:
+            raw_numbers = input("Enter puzzle size n (e.g., 3 for a 3x3 puzzle) or 'q' to quit: ").strip()
+            if raw_numbers.isdigit() and int(raw_numbers) >= 2:
+                n = int(raw_numbers)
+                break
+            elif raw_numbers == "q":
+                return
+            print("Invalid input. Please enter an integer >= 2 or 'q' to quit.")
+        
+        set_goal_state(n)
+        board = enter_custom_puzzle(n)
     
     algorithm = select_algorithm()
 
@@ -281,8 +311,8 @@ def main():
     print("Number of nodes expanded: ", expanded)
     print("Max queue size: ", max_q)
 
-## TESTS
-if __name__ == "__main__":
+def run_tests():
+    set_goal_state(3)
     assert board_to_tuple(goal_state) == (1,2,3,4,5,6,7,8,0)
     print("board_to_tuple successful")
 
@@ -346,5 +376,7 @@ if __name__ == "__main__":
     print("UCS expanded:", exp_u, "max queue:", max_u)
     print("A* Manhattan expanded:", exp_m, "max queue:", max_m)
     print("A* Misplaced expanded:", exp_mi, "max queue:", max_mi)
-    
+
+if __name__ == "__main__":
+    # run_tests()
     main()
