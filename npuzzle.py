@@ -1,5 +1,6 @@
 import copy
 import heapq
+import time
 
 goal_state = [[1, 2, 3], 
               [4, 5, 6], 
@@ -292,6 +293,7 @@ def main():
     
     algorithm = select_algorithm()
 
+    start = time.time()
     if algorithm == "1":
         node, expanded, max_q = uniform_cost(board)
     elif algorithm == "2":
@@ -301,6 +303,7 @@ def main():
     else:
         print("Invalid algorithm choice. Please enter 1, 2, or 3.")
         return
+    elapsed = time.time() - start
     
     if node is None:
         print("No solution found.")
@@ -310,6 +313,7 @@ def main():
     print("Solution depth: ", node.g)
     print("Number of nodes expanded: ", expanded)
     print("Max queue size: ", max_q)
+    print(f"Time taken: {elapsed:.4f}s")
 
 def run_tests():
     set_goal_state(3)
@@ -377,6 +381,46 @@ def run_tests():
     print("A* Manhattan expanded:", exp_m, "max queue:", max_m)
     print("A* Misplaced expanded:", exp_mi, "max queue:", max_mi)
 
+def run_data(label, board, algo_fn):
+    set_goal_state(len(board))
+    start = time.time()
+    node, expanded, max_q = algo_fn(board)
+    elapsed = time.time() - start
+    depth = node.g if node else -1
+    print(f"{label}: depth = {depth}, expanded = {expanded}, maxQ = {max_q}, time = {elapsed}s")
+
+def run_all_data():
+    print("--------------------------------")
+    run_data("UCS very easy", very_easy, uniform_cost)
+    run_data("Misplaced very easy", very_easy, a_star_misplaced)
+    run_data("Manhattan very easy", very_easy, a_star_manhattan)
+    print("--------------------------------")
+
+    run_data("UCS easy", easy, uniform_cost)
+    run_data("Misplaced easy", easy, a_star_misplaced)
+    run_data("Manhattan easy", easy, a_star_manhattan)
+    print("--------------------------------")
+
+    run_data("UCS normal", normal, uniform_cost)
+    run_data("Misplaced normal", normal, a_star_misplaced)
+    run_data("Manhattan normal", normal, a_star_manhattan)
+    print("--------------------------------")
+
+    run_data("UCS hard", hard, uniform_cost)
+    run_data("Misplaced hard", hard, a_star_misplaced)
+    run_data("Manhattan hard", hard, a_star_manhattan)
+    print("--------------------------------")
+
+    run_data("UCS very hard", very_hard, uniform_cost)
+    run_data("Misplaced very hard", very_hard, a_star_misplaced)
+    run_data("Manhattan very hard", very_hard, a_star_manhattan)
+    print("--------------------------------")
+
+    run_data("UCS extreme", extreme, uniform_cost)
+    run_data("Misplaced extreme", extreme, a_star_misplaced)
+    run_data("Manhattan extreme", extreme, a_star_manhattan)
+
 if __name__ == "__main__":
     # run_tests()
+    # run_all_data()
     main()
