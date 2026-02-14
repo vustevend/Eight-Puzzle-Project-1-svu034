@@ -309,11 +309,16 @@ def main():
         print("No solution found.")
         return
     
-    print("Goal reached!")
-    print("Solution depth: ", node.g)
-    print("Number of nodes expanded: ", expanded)
-    print("Max queue size: ", max_q)
-    print(f"Time taken: {elapsed:.4f}s")
+    path = reconstruct_path(node)
+
+    for i, board in enumerate(path):
+        print(f"\nStep {i}")
+        print_board(board)
+    
+    print("\nTotal nodes expanded:", expanded)
+    print("Depth:", node.g)
+    print("Max queue size:", max_q)
+    print(f"Elapsed time: {elapsed:.4f}s")
 
 def run_tests():
     set_goal_state(3)
@@ -419,6 +424,19 @@ def run_all_data():
     run_data("UCS extreme", extreme, uniform_cost)
     run_data("Misplaced extreme", extreme, a_star_misplaced)
     run_data("Manhattan extreme", extreme, a_star_manhattan)
+
+def reconstruct_path(goal_node):
+    path = []
+    node = goal_node
+    while node is not None:
+        path.append([row[:] for row in node.board])
+        node = node.parent
+    path.reverse()
+    return path
+
+def print_board(board):
+    for row in board:
+        print(tuple(row))
 
 if __name__ == "__main__":
     # run_tests()
