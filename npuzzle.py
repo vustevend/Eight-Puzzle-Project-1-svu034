@@ -313,7 +313,7 @@ def main():
 
     for i, n in enumerate(path):
         print(f"\nStep {i}")
-        print_board(node.board)
+        print_board(n.board)
         print(f"g={n.g}, h={n.h}, f={n.f}")
     
     print("\nTotal nodes expanded:", expanded)
