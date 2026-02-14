@@ -311,9 +311,10 @@ def main():
     
     path = reconstruct_path(node)
 
-    for i, board in enumerate(path):
+    for i, n in enumerate(path):
         print(f"\nStep {i}")
-        print_board(board)
+        print_board(node.board)
+        print(f"g={n.g}, h={n.h}, f={n.f}")
     
     print("\nTotal nodes expanded:", expanded)
     print("Depth:", node.g)
@@ -429,7 +430,7 @@ def reconstruct_path(goal_node):
     path = []
     node = goal_node
     while node is not None:
-        path.append([row[:] for row in node.board])
+        path.append(node)
         node = node.parent
     path.reverse()
     return path
